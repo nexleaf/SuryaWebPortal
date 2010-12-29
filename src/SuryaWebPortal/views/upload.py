@@ -16,9 +16,12 @@ from django.views.decorators.csrf import csrf_exempt
 
 from Collections.SuryaUploadData import *
 from Collections.SuryaDeploymentData import *
-from Collections.SuryaCalibrationData import *
-from SuryaWebPortal.exceptions.UploadException import UploadException 
 from Collections.SuryaProcessingList import *
+from Collections.SuryaCalibrationData import *
+
+from SuryaWebPortal.utils.postparser import *
+from SuryaWebPortal.exceptions.UploadException import UploadException 
+
 import mongoengine
 
 # Connect to MongoDB
@@ -32,177 +35,153 @@ log.setLevel(logging.DEBUG)
 CUSTOMIZED_PHONE_STATUS_OK   = "upok "
 CUSTOMIZED_PHONE_STATUS_FAIL = "svrfail "
 
+
+
+
+
+def get_post_config():
+    # (required, type, db_name, default, parser)
+    return { \
+        "device_id": PostParserArgs(True, "string", "device_id", "None", None), \
+        "aux_id": PostParserArgs(False, "string", "aux_id", "", None), \
+        "misc": PostParserArgs(False, "string", "misc", "", None), \
+        #"record_datetime": PostParserArgs(True, "datetime", "record_datetime", datetime.now(), lambda x: datetime.fromtimestamp(float(x)/1000.0)), \
+        "record_datetime": PostParserArgs(True, "datetime", "record_datetime", datetime.now(), lambda x: eval ("datetime(" + x + ")")), \
+        "gps_latitude": PostParserArgs(False, "float", "gps_latitude", 0.0, None), \
+        "gps_longitude": PostParserArgs(False, "float", "gps_longitude", 0.0, None), \
+        "gps_altitude": PostParserArgs(False, "float", "gps_altitude", 0.0, None), \
+        "mimetype": PostParserArgs(True, "string", "mimetype", "type/none", None), \
+        "deployment_id": PostParserArgs(True, "string", "deployment_id", "Deployment", None), \
+        "version": PostParserArgs(True, "string", "version", "0.0", None), \
+        "tag": PostParserArgs(False, "string", "tag", "", None), \
+        "datatype": PostParserArgs(True, "string", "datatype", "none", None)
+        }
+
+
+
+
 @csrf_exempt
 def upload_image(request):
     ''' This view gets invoked when uploading data to the server. The 
         post params are validated and stored in the SuryaUploadData
         Collection and the data files uploaded are stored in GridFS
     '''
+
+    pp = PostParser(get_post_config())
     
     if (request.method == 'POST'):
+        
         try:
-            # Check if post has the device_id
-            if 'device_id' not in request.POST:
-                raise UploadException('[ Sanity ] Missing mandatory field [device_id] in POST fields.')
-            else:
-                device_id = request.POST["device_id"]
-                valid_flag = True
-                invalid_reason = ""
-                
-            server_datetime = datetime.now()
             
-            # Check if post has the aux_id field
-            if 'aux_id' in request.POST:
-                aux_id = request.POST["aux_id"]
-            else:
-                log.info('[ Sanity ] Missing [aux_id] in POST fields.')
-                aux_id = ""
-                
-            # TODO : extract calibration data from the misc field
-            if 'misc' in request.POST:
-                try:
-                    misc = request.POST["misc"]
-                    misc_dict = json.loads(misc)
-                except ValueError as ve:
-                    log.error('[ Sanity ] The misc input is not a json syntax string. Store it as { "rawstring": (...input...)} . The orignial Input:' + str(misc)+ "Reason:" + str(ve))
-                    misc = '{ "rawString":"' + str(misc) + '"}'
-            else:
-                log.info('Missing [misc] in POST fields.')
-                misc = ""
+            invalid_reason = ""
+            
+            server_datetime = datetime.now()
 
-            #validation on client datetime
-            if 'record_datetime' in request.POST:
-                try:
-                    record_datetime = eval ("datetime(" + request.POST["record_datetime"] + ")")
-                except:
-                    valid_flag = False
-                    invalid_reason += "The record_datetime provided by the client is not in a valid format.<br/>"
-                    record_datetime = datetime(1999,1,1,1,1,1)
-                    log.warning('The record_datetime provided by the client is not in a valid format. For example, a right example is "2010,6,19,16,18,00" (Year, Month, Day, Hour, Minute, Second). <br/> Details: <br/>' + str(sys.exc_info()))                     
-            else: #record_datetime is missing
-                valid_flag = False
-                invalid_reason += "Missing [record_datetime] in POST fields.<br/>"
-                log.warning("Missing [record_datetime] in POST fields.")
-                record_datetime = datetime(1999,1,1,1,1,1)
-                
-            # GPS data
-            (gps_longitude, gps_latitude, gps_altitude) = (0.0, 0.0, 0.0) # a default value
-            if 'gps' in request.POST:
-                gps = request.POST["gps"]
-                try:
-                    gps_values = [ val.strip() for val in gps.split(",") ]
-                    if len(gps_values)==3:
-                        (gps_longitude, gps_latitude, gps_altitude) = [float(val) for val in gps_values] #overwrite with correct value
-                    else:
-                        log.warning("The format of GPS seems to be corrupted. It must contains three float numbers and be seperated by comma.")
-                except:
-                    log.warning("The format of GPS seems to be corrupted. <br/> Details <br/>" + str(sys.exc_info()))
-            else:
-                log.info("Missing [gps] in POST fields.")
-                
-            if 'data_type' in request.POST:       
-                data_type = request.POST["data_type"]
-            else:
-                log.info("Missing [data_type] in POST fields.")
-                data_type = ""
+            post_crit_error = pp.parse(request.POST)            
+            file_crit_error = False
 
-            if 'tag' in request.POST:
-                tag = request.POST["tag"]
-            else:
-                log.info("Missing [tag] in POST fields.")
-                tag = ""
+            strMeta = ""
+                       
+            if 'data' not in request.FILES:
+                file_crit_error = True
+                invalid_reason += " -- MISSING DATA FILE"
+                #raise UploadException("[ Sanity ] Missing mandatory field [data] in POST fields.")       
 
-            if 'version' in request.POST:
-                version = request.POST["version"]
+            if post_crit_error:
+                invalid_reason = pp.get_log() + " -- Error parsing Post" + invalid_reason
+                strMeta = invalid_reason + " Not Valid: " + str(post_crit_error or file_crit_error)
             else:
-                log.info("Missing [version] in POST fields.")
-                version = ""
-
-            if 'deployment_id' in request.POST:
-                deployment_id = request.POST["deployment_id"]
-            else:
-                log.info("Missing [deployment_id] in POST fields.")
-                 
-            strMeta = "device_id:%(device_id)s, server_datetime:%(server_datetime)s, aux_id:%(aux_id)s, misc:%(misc)s, record_datetime:%(record_datetime)s, gps: %(gps_longitude)s %(gps_latitude)s %(gps_altitude)s, data_type:%(data_type)s, tag:%(tag)s, version:%(version)s, deployment_id:%(deployment_id)s, valid_flag:%(valid_flag)s, invalid_reason:%(invalid_reason)s" % \
-            {"device_id": device_id, "server_datetime": server_datetime, "aux_id": aux_id, "misc": misc, "record_datetime": record_datetime, "gps_longitude": gps_longitude, "gps_latitude": gps_latitude, "gps_altitude": gps_altitude, "data_type": data_type, "tag": tag, "version": version, "deployment_id": deployment_id, "valid_flag":valid_flag, "invalid_reason":invalid_reason}
-
-            ##########################
-            # Prepare for saving image
+                strMeta = pp.get_log() + invalid_reason + " -- Not Valid: " + str(post_crit_error or file_crit_error)
 
             #Get Server Time String
             datetime_str = server_datetime.strftime("%Y%m%d.%H%M%S.") # e.g '20100702.174502.' 
-            img_filename = datetime_str + device_id + ".jpg"
-            img_orig_filename = datetime_str + device_id + "-orig.jpg"
-                       
-            if 'bin_file' not in request.FILES:
-                raise UploadException("[ Sanity ] Missing mandatory field [bin_file] in POST fields.")       
+            data_filename = datetime_str + pp.device_id + ".jpg"
+            data_orig_filename = datetime_str + pp.device_id + "-orig.jpg"
 
-                    ######################################
-            # Prepare saving meta info to database 
+            ######################################
+            # Prepare saving meta info to database
             try:
                 #Save metadata to DB   
                 dbRecord = SuryaUploadData(
-                deviceId=device_id, \
-                serverDatetime=server_datetime, 
-                filename=img_filename,
-                auxId=aux_id, \
-                misc=misc, 
-                recordDatetime=record_datetime, \
-                gpsLatLong=[gps_latitude, gps_longitude], \
-                gpsAltitude=gps_altitude, \
-                datatype=data_type, 
-                tag=tag, 
-                version=version, \
-                validFlag=valid_flag, 
-                invalidReason=invalid_reason, \
-                deploymentId=deployment_id)
+                deviceId = pp.device_id, \
+                serverDatetime = server_datetime, 
+                filename = data_filename,
+                auxId = pp.aux_id, \
+                misc = pp.misc, 
+                recordDatetime = pp.record_datetime, \
+                gpsLatLong = [pp.gps_latitude, pp.gps_longitude], \
+                gpsAltitude = pp.gps_altitude, \
+                datatype = pp.datatype, \
+                mimetype = pp.mimetype, \
+                tag = pp.tag, \
+                version = pp.version, \
+                validFlag = not (post_crit_error or file_crit_error), \
+                invalidReason = invalid_reason, \
+                deploymentId = pp.deployment_id)
                 
                 try:
                     # Save uploaded image into the work space. We may resize
-                    dbRecord.file.new_file(filename = img_filename, content_type = 'image/jpeg')
-                    for chunk in request.FILES['bin_file'].chunks():
+                    dbRecord.file.new_file(filename = data_filename, content_type = 'image/jpeg')
+                    for chunk in request.FILES['data'].chunks():
                         dbRecord.file.write(chunk)
                     dbRecord.file.close()
 
                     # Save original uploaded image
-                    dbRecord.origFile.new_file(filename = img_orig_filename, content_type = 'image/jpeg')
-                    for chunk in request.FILES['bin_file'].chunks():
+                    dbRecord.origFile.new_file(filename = data_orig_filename, content_type = 'image/jpeg')
+                    for chunk in request.FILES['data'].chunks():
                         dbRecord.origFile.write(chunk)
                     dbRecord.origFile.close()
+                    dbRecord.save()
                     
-                except:
-                    raise UploadException("[ SavingFile ] Errors while attempting to save the uploading file. <br/> Details: <br/>" + str(sys.exc_info()[1]))
+                except Exception, e:
+                    try:
+                        log.error("[ SavingFile ] Erroers while attempting to save the uploading file. " + str(e) + " <br/> Details: <br/>" + str(sys.exc_info()[1])) + " " + strMeta
+                        dbRecord.validFlag = False
+                        dbRecord.invalidReason = dbRecord.invalidReason + " -- Error trying save file and record: " + str(e)
+                        dbRecord.save()
+                    except:
+                        raise UploadException("[ SavingFile ] Errors while attempting to save the uploading file. <br/> Details: <br/>" + str(sys.exc_info()[1]))
+
                 
-                dbRecord.save()
-                
-                # This method varies from application to application gotta make it generic
-                #Save this dbRecord reference in the ProcessList, get default processing data
-                # TODO invoke this as a method
-                for item in SuryaDeploymentData.objects(deploymentId=deployment_id):
-                    # currently no datetime check, no validation as in if any one of the following is missing 
-                    # this item doesn't get added to the process list
-                    
-                    if isinstance(item.calibrationId, SuryaImageAnalysisBCStripData):
-                        log.info('got bcstrip data')
-                        bcStripData = item.calibrationId
-                    elif isinstance(item.calibrationId, SuryaImageAnalysisCalibrationData):
-                        log.info('got img analysis calib data')
-                        calibData = item.calibrationId
-                    elif isinstance(item.calibrationId, SuryaImagePreProcessingCalibrationData):
-                        log.info('got img pre proc calib data')
-                        pprocData = item.calibrationId
-                
-                SuryaIANAProcessingList(processEntity=dbRecord,
-                                        processingFlag=False,
-                                        processedFlag=False,
-                                        overrideFlag=True, 
-                                        preProcessingConfiguration=pprocData, 
-                                        computationConfiguration=calibData, 
-                                        bcStrips=bcStripData).save()
+                if not post_crit_error and not file_crit_error:
+
+                    bcStripData, calibData, pprocData = None, None, None
+                        
+                    # This method varies from application to application gotta make it generic
+                    #Save this dbRecord reference in the ProcessList, get default processing data
+                    # TODO invoke this as a method
+                        
+                    for item in SuryaDeploymentData.objects(deploymentId=pp.deployment_id):
+                        # currently no datetime check, no validation as in if any one of the following is missing 
+                        # this item doesn't get added to the process list
+                        
+                        if isinstance(item.calibrationId, SuryaImageAnalysisBCStripData):
+                            log.info('got bcstrip data')
+                            bcStripData = item.calibrationId
+                        elif isinstance(item.calibrationId, SuryaImageAnalysisCalibrationData):
+                            log.info('got img analysis calib data')
+                            calibData = item.calibrationId
+                        elif isinstance(item.calibrationId, SuryaImagePreProcessingCalibrationData):
+                            log.info('got img pre proc calib data')
+                            pprocData = item.calibrationId
+
+                    if bcStripData is None or calibData is None or pprocData is None:
+                        # no try block for now since this worked above
+                        dbRecord.validFlag = False
+                        dbRecord.invalidReason = dbRecord.invalidReason + " -- No calibration data for this deployment ID!"
+                        dbRecord.save()
+                    else:
+                        SuryaIANAProcessingList(processEntity=dbRecord,
+                                                processingFlag=False,
+                                                processedFlag=False,
+                                                overrideFlag=True, 
+                                                preProcessingConfiguration=pprocData, 
+                                                computationConfiguration=calibData, 
+                                                bcStrips=bcStripData).save()
                  
-            except:
-                raise UploadException("[ AccessDatabase ] Errors while attempting to save meta info to the suryaDB database."+
-                                          " <br/> Details: <br/>" + str(sys.exc_info()[1]))
+            except Exception as e:
+                raise UploadException("[ AccessDatabase ] Errors while attempting to save meta info to the suryaDB database." + \
+                                      " <br/> Details: <br/>" + str(sys.exc_info()[1]) + " " + strMeta + " " + str(e))
 
         except UploadException as ue:
             log.error(ue.str)
@@ -215,7 +194,7 @@ def upload_image(request):
             # Prepare for returning & logging
 
             strRet = CUSTOMIZED_PHONE_STATUS_OK
-            strRet += "Your uploading file has been stored at " + img_filename + ". \n"
+            strRet += "Your uploading file has been stored at " + data_filename + ". \n"
             strRet += strMeta
             log.info("[ test_tag ] " + strRet)
         

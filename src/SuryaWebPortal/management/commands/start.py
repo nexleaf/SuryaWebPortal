@@ -64,6 +64,7 @@ class Command(BaseCommand):
             if  type == "compu":
                 calibrationData = SuryaImageAnalysisCalibrationData(calibrationId = calibrationDataEntry.get("calibrationId"),
                                                                     exposedTime   = calibrationDataEntry.get("exposedTime"),
+                                                                    timeUnits     = calibrationDataEntry.get("timeUnits"),
                                                                     airFlowRate   = calibrationDataEntry.get("airFlowRate"),
                                                                     filterRadius  = calibrationDataEntry.get("filterRadius"),
                                                                     bcArea        = calibrationDataEntry.get("bcArea"))

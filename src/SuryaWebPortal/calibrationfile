@@ -116,7 +116,7 @@
   "timeUnits": "hours",
   "airFlowRate":0.4,
   "bcArea":12.5,
-  "filterRadius":2.0,
+  "filterRadius":1.0,
   "deploymentIds": [
                     {
                       "deploymentId":"usc.bc1",

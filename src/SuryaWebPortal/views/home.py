@@ -24,7 +24,7 @@ from Collections.SuryaProcessingList import *
 import mongoengine
 
 # Connect to MongoDB
-connect('SuryaDB')
+connect('SuryaDB', tz_aware=True)
 
 log = getLog('views')
 log.setLevel(logging.DEBUG)

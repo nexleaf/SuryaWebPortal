@@ -102,3 +102,11 @@ INSTALLED_APPS = (
     'SuryaWebPortal',
 )
 
+# Used to override these settings for local development.
+try:
+    from settings_local import *
+except ImportError:
+    pass
+
+
+

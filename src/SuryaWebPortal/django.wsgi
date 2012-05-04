@@ -2,6 +2,10 @@ import os
 import sys
 import socket
 
+# Add the virtual Python environment site-packages directory to the path
+import site
+site.addsitedir('/home/surya/.virtualenvs/surya_bc/lib/python2.7/site-packages/')
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'SuryaWebPortal.settings'
 
 import django.core.handlers.wsgi

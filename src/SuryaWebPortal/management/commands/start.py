@@ -61,6 +61,7 @@ class Command(BaseCommand):
             if len(SuryaCalibrationData.objects(calibrationId=int(calibrationDataEntry.get("calibrationId")))) != 0:
                 continue
             type = calibrationDataEntry.get("type")
+            self.stdout.write("Working on %s\n" % type)
             if  type == "compu":
                 calibrationData = SuryaImageAnalysisCalibrationData(calibrationId = calibrationDataEntry.get("calibrationId"),
                                                                     exposedTime   = calibrationDataEntry.get("exposedTime"),
@@ -68,6 +69,7 @@ class Command(BaseCommand):
                                                                     airFlowRate   = calibrationDataEntry.get("airFlowRate"),
                                                                     filterRadius  = calibrationDataEntry.get("filterRadius"),
                                                                     bcArea        = calibrationDataEntry.get("bcArea"))
+                self.stdout.write("Saving compu %d\n" % calibrationData.calibrationId)
                 calibrationData.save()
             if type == "pproc":
                 calibrationData = SuryaImagePreProcessingCalibrationData(calibrationId = calibrationDataEntry.get("calibrationId"),
@@ -78,10 +80,12 @@ class Command(BaseCommand):
                                                                    accumulatorThreshold = calibrationDataEntry.get("accumulatorThreshold"),
                                                                    samplingFactor = calibrationDataEntry.get("samplingFactor"),
                                                                    minimumDistance = calibrationDataEntry.get("minimumDistance"))
+                self.stdout.write("Saving pproc %d\n" % calibrationData.calibrationId)
                 calibrationData.save()
             if type == "bcstrip":
                 calibrationData = SuryaImageAnalysisBCStripData(calibrationId = calibrationDataEntry.get("calibrationId"),
                                                             bcStrips = calibrationDataEntry.get("bcStrips"))
+                self.stdout.write("Saving bcstrip %d\n" % calibrationData.calibrationId)
                 calibrationData.save()
             deploymentDataList = calibrationDataEntry.get("deploymentIds")
             # Initialize the DB with default DeploymentId to CalibrationData mapping

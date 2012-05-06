@@ -11,7 +11,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'SuryaWebPortal.settings'
 import django.core.handlers.wsgi
 application = django.core.handlers.wsgi.WSGIHandler()
 
-os.environ['SURYA_DEPLOY_ROOT'] = '/home/surya/deployed'
+os.environ['SURYA_DEPLOY_ROOT'] = '/var/www/surya_bc'
 
 mypath = [os.getenv('SURYA_DEPLOY_ROOT') + '/SuryaWebPortal/src/']
 

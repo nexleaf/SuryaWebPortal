@@ -151,5 +151,48 @@
                       "activateDatetime":[2012,3,20,0,0,0]
                     }
                    ]  
+},
+{
+  "type":"compu",
+  "calibrationId":10,
+  "exposedTime": 1.1,
+  "timeUnits": "hours",
+  "airFlowRate":0.5,
+  "bcArea":3.14,
+  "filterRadius":1.0,
+  "deploymentIds": [
+                    {
+                      "deploymentId":"duke",
+                      "activateDatetime":[2012,5,10,0,0,0]
+                    }
+                   ]  
+},
+{
+  "type":"pproc",
+  "calibrationId":11,
+  "dp":2,
+  "minimumRadius":0,
+  "maximumRadius":0,
+  "minimumDistance":200,
+  "accumulatorThreshold":100,
+  "highThreshold":100,
+  "samplingFactor":10,
+  "deploymentIds": [
+                    {
+                      "deploymentId":"duke",
+                      "activateDatetime":[2012,5,10,0,0,0]
+                    }
+                   ]  
+},
+{
+  "type":"bcstrip",
+  "calibrationId":12,
+  "bcStrips":[1.23679205, 1.52321978, 1.89769468, 2.38728224, 3.02736778, 3.86421403, 4.95830473, 6.38871618, 8.25883254, 10.703818],
+  "deploymentIds": [
+                    {
+                      "deploymentId":"duke",
+                      "activateDatetime":[2012,5,10,0,0,0]
+                    }
+                   ]  
 }
 ]

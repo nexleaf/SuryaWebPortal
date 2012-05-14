@@ -22,7 +22,11 @@
 
 <ul>
 <li>Exposure Time: {{ result.computationConfiguration.exposedTime }} {{ result.computationConfiguration.timeUnits }} 
+{% if result.computationConfiguration.airFlowRate < 20 %}
 <li>Air Flow Rate: {{ result.computationConfiguration.airFlowRate }} l/p
+{% else %}
+<li>Air Flow Rate: {{ result.computationConfiguration.airFlowRate }} cc/m
+{% endif %}
 <li>Filter Radius: {{ result.computationConfiguration.filterRadius }} cm
 </ul>
 

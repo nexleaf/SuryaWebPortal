@@ -155,7 +155,7 @@
 {
   "type":"compu",
   "calibrationId":10,
-  "exposedTime": 1.1,
+  "exposedTime": 3.0,
   "timeUnits": "hours",
   "airFlowRate":0.5,
   "bcArea":3.14,

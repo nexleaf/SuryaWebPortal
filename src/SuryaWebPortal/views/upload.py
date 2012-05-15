@@ -94,7 +94,7 @@ def upload_image(request):
                 strMeta = pp.get_log() + invalid_reason + " -- Not Valid: " + str(post_crit_error or file_crit_error)
 
             #Get Server Time String
-            datetime_str = server_datetime.strftime("%Y%m%d.%H%M%S.") # e.g '20100702.174502.' 
+            datetime_str = server_datetime.strftime("%Y%m%d.%H%M%S.%f.") # e.g '20100702.174502.' 
             data_filename = datetime_str + pp.device_id + ".jpg"
             data_orig_filename = datetime_str + pp.device_id + "-orig.jpg"
 

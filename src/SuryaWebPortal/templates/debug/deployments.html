@@ -2,6 +2,16 @@
 {% block content %}
 
 <h2>Deployments</h2>
+<table>
+  <tr>
+    <th>Deployment ID</th>
+  </tr>
+  {% for d in deployments %}
+  <tr>
+    <td>{{ d }}</td>
+  </tr>
+  {% endfor %}
+</table>
 
 {% endblock %}
 

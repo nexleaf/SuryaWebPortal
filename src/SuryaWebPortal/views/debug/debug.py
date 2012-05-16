@@ -34,8 +34,10 @@ def deployments(request):
     if not request.user.is_staff:
         return redirect('SuryaWebPortal.views.home.home')
     
+    deployments = SuryaUploadData.objects.distinct('deploymentId')
+    deployments.sort()
     t = loader.get_template('debug/deployments.html')
-    c = RequestContext(request, {})
+    c = RequestContext(request, {'deployments':deployments})
     return HttpResponse(t.render(c))
 
 @login_required

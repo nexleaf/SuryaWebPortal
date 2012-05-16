@@ -56,8 +56,13 @@ def view_upload(request, deploymentId, objId):
         return redirect('SuryaWebPortal.views.home.home')
     
     upload = SuryaUploadData.objects.with_id(objId)
+    try:
+        result = SuryaIANAResult.objects.get(item=upload)
+    except:
+        result = SuryaIANAFailedResult.objects.get(item=upload)
+        
     t = loader.get_template('debug/view_upload.html')
-    c = RequestContext(request, {'up':upload, 'dep_id':deploymentId})
+    c = RequestContext(request, {'up':upload, 'dep_id':deploymentId, 'result':result})
     return HttpResponse(t.render(c))
 
 @login_required

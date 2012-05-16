@@ -6,7 +6,21 @@
 .no {color:red;}
 table {border: 1px solid #999;}
 table th {border-bottom: 1px solid #999;}
+table tr.highlight_row td {background:#ffffcc !important;}
 </style>
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#uploads_table tr").hover(
+        function() {
+            $(this).addClass("highlight_row");
+        },
+        function() {
+            $(this).removeClass("highlight_row");
+        }
+    );
+});
+</script>
+
 
 <h2 style="margin-bottom:0;">View Deployment: {{ dep_id }}</h2>
 <div class="breadcrumbs">
@@ -17,7 +31,7 @@ View Deployment: {{ dep_id }}
 <br />
 
 <h3>Uploads for this deployment</h3>
-<table>
+<table id="uploads_table">
   <tr>
     <th>Device ID</th>
     <th>Server Date Time</th>
@@ -28,7 +42,7 @@ View Deployment: {{ dep_id }}
   <tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{% url SuryaWebPortal.views.debug.debug.view_upload dep_id u.id %}">{{ u.deviceId }}</a></td>
     <td>{{ u.serverDatetime }}</td>
-    <td><span class="{{ u.processing_success|yesno }}">{{ u.processing_success|yesno }}</span></td>
+    <td><span class="{{ u.processing_success|yesno }}">{{ u.processing_success|yesno|capfirst }}</span></td>
     <td>{{ u.misc }}</td>
   </tr>
   {% empty %}

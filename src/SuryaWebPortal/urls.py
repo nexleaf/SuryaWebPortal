@@ -34,9 +34,11 @@ urlpatterns = patterns('',
                        (r'^debug/uploads/(\w*)/$', debug.uploads),
                        (r'^debug/results/$', debug.results),
                        (r'^debug/failures/$', debug.failures),
-                       (r'^debug/deployments/$', debug.deployments),
-                       (r'^debug/deployments/(?P<deploymentId>\w+(\.)?\w*)/$', debug.view_deployment),
-                       (r'^debug/deployments/(?P<deploymentId>\w+(\.)?\w*)/(?P<objId>\w+)/$', debug.view_upload),
+
+                       # Deployments
+                       (r'^deployments/$', debug.deployments),
+                       (r'^deployments/(?P<deploymentId>\w+(\.)?\w*)/$', debug.view_deployment),
+                       (r'^deployments/(?P<deploymentId>\w+(\.)?\w*)/(?P<objId>\w+)/$', debug.view_upload),
 
                        # for admin 
                        (r'^admin/', include(admin.site.urls)),

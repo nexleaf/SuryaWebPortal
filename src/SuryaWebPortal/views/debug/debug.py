@@ -45,7 +45,7 @@ def view_deployment(request, deploymentId):
     if not request.user.is_staff:
         return redirect('SuryaWebPortal.views.home.home')
     
-    uploads = None
+    uploads = SuryaUploadData.objects(deploymentId=deploymentId)
     t = loader.get_template('debug/view_deployment.html')
     c = RequestContext(request, {'uploads':uploads, 'dep_id':deploymentId})
     return HttpResponse(t.render(c))

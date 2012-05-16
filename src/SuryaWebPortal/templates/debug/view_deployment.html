@@ -1,14 +1,33 @@
 {% extends "debug/debug.html" %}
 {% block content %}
 
+<style type="text/css">
+.yes {color:green;}
+.no {color:red;}
+table {border: 1px solid #999;}
+table th {border-bottom: 1px solid #999;}
+</style>
+
 <h2>Uploads for: {{ dep_id }}</h2>
 <table>
   <tr>
-    <th>Deployment ID</th>
+    <th>Device ID</th>
+    <th>Server Date Time</th>
+    <th>Successful?</th>
+    <th>Miscellaneous</th>
   </tr>
+  {% for u in uploads %}
+  <tr class="{% cycle 'odd' 'even' %}">
+    <td>{{ u.deviceId }}</td>
+    <td>{{ u.serverDatetime }}</td>
+    <td><span class="{{ u.processing_success|yesno }}">{{ u.processing_success|yesno }}</span></td>
+    <td>{{ u.misc }}</td>
+  </tr>
+  {% empty %}
   <tr>
-    <td>{{ dep_id }}</td>
+    <td colspan="4">No Uploads Found for Device ID: {{ dep_id }}</td>
   </tr>
+  {% endfor %}
 </table>
 
 {% endblock %}

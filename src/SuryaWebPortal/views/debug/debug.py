@@ -6,11 +6,13 @@ from mongoengine import *
 
 from datetime import datetime
 from Logging.Logger import getLog
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import Context, loader, RequestContext
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
+
+from SuryaWebPortal.models import MyUser
 
 from Collections.SuryaUploadData import *
 from Collections.SuryaGroundTruth import *
@@ -31,10 +33,16 @@ log.setLevel(logging.DEBUG)
 
 @login_required
 def deployments(request):
-    if not request.user.is_staff:
-        return redirect('SuryaWebPortal.views.home.home')
+    all_deployments = SuryaUploadData.objects.distinct('deploymentId')
     
-    deployments = SuryaUploadData.objects.distinct('deploymentId')
+    if request.user.is_superuser:
+        deployments = all_deployments
+    else:
+        user_deployments = MyUser.objects.get(id=request.user.id).deployment_list()
+        deployments = []
+        for d in all_deployments:
+            if d in user_deployments:
+                deployments.append(d)
     deployments.sort()
     t = loader.get_template('debug/deployments.html')
     c = RequestContext(request, {'deployments':deployments})
@@ -42,8 +50,9 @@ def deployments(request):
 
 @login_required
 def view_deployment(request, deploymentId):
-    if not request.user.is_staff:
-        return redirect('SuryaWebPortal.views.home.home')
+    u = MyUser.objects.get(id=request.user.id)
+    if deploymentId not in u.deployment_list():
+        return HttpResponseRedirect('/')
     
     uploads = SuryaUploadData.objects(deploymentId=deploymentId).order_by('-serverDatetime')
     t = loader.get_template('debug/view_deployment.html')
@@ -52,8 +61,9 @@ def view_deployment(request, deploymentId):
 
 @login_required
 def view_upload(request, deploymentId, objId):
-    if not request.user.is_staff:
-        return redirect('SuryaWebPortal.views.home.home')
+    u = MyUser.objects.get(id=request.user.id)
+    if deploymentId not in u.deployment_list():
+        return HttpResponseRedirect('/')
     
     upload = SuryaUploadData.objects.with_id(objId)
     flowratestr = "cc/m"

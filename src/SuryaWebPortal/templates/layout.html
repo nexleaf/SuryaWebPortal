@@ -59,11 +59,12 @@ Download (todo)
 {% endif %}
 </div>
 
+{% if user.is_superuser %}
 <div class="span-4 colborder">
 
 <a href="{% url admin:index %}">Admin</a>
 </div>
-
+{% endif %}
 <hr />   
 
 	{% block header %}{% endblock %}

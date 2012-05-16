@@ -10,6 +10,8 @@
   <tr>
     <td><a href="{% url SuryaWebPortal.views.debug.debug.view_deployment d %}">{{ d }}</a></td>
   </tr>
+  {% empty %}
+  <tr><td>No Deployments Found</td></tr>
   {% endfor %}
 </table>
 

@@ -51,6 +51,16 @@ def view_deployment(request, deploymentId):
     return HttpResponse(t.render(c))
 
 @login_required
+def view_upload(request, deploymentId, objId):
+    if not request.user.is_staff:
+        return redirect('SuryaWebPortal.views.home.home')
+    
+    upload = SuryaUploadData.objects.with_id(objId)
+    t = loader.get_template('debug/view_upload.html')
+    c = RequestContext(request, {'up':upload, 'dep_id':deploymentId})
+    return HttpResponse(t.render(c))
+
+@login_required
 def debug(request):
     if not request.user.is_staff:
         return redirect('SuryaWebPortal.views.home.home')

@@ -36,6 +36,7 @@ urlpatterns = patterns('',
                        (r'^debug/failures/$', debug.failures),
                        (r'^debug/deployments/$', debug.deployments),
                        (r'^debug/deployments/(?P<deploymentId>\w+(\.)?\w*)/$', debug.view_deployment),
+                       (r'^debug/deployments/(?P<deploymentId>\w+(\.)?\w*)/(?P<objId>\w+)/$', debug.view_upload),
 
                        # for admin 
                        (r'^admin/', include(admin.site.urls)),

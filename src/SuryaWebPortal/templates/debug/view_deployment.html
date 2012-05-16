@@ -8,7 +8,15 @@ table {border: 1px solid #999;}
 table th {border-bottom: 1px solid #999;}
 </style>
 
-<h2>Uploads for: {{ dep_id }}</h2>
+<h2 style="margin-bottom:0;">View Deployment: {{ dep_id }}</h2>
+<div class="breadcrumbs">
+<a href="{% url SuryaWebPortal.views.debug.debug.deployments %}">Deployments</a>
+&nbsp;&raquo;&nbsp;
+View Deployment: {{ dep_id }}
+</div>
+<br />
+
+<h3>Uploads for this deployment</h3>
 <table>
   <tr>
     <th>Device ID</th>
@@ -18,7 +26,7 @@ table th {border-bottom: 1px solid #999;}
   </tr>
   {% for u in uploads %}
   <tr class="{% cycle 'odd' 'even' %}">
-    <td>{{ u.deviceId }}</td>
+    <td><a href="{% url SuryaWebPortal.views.debug.debug.view_upload dep_id u.id %}">{{ u.deviceId }}</a></td>
     <td>{{ u.serverDatetime }}</td>
     <td><span class="{{ u.processing_success|yesno }}">{{ u.processing_success|yesno }}</span></td>
     <td>{{ u.misc }}</td>

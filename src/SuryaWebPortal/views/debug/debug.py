@@ -56,13 +56,18 @@ def view_upload(request, deploymentId, objId):
         return redirect('SuryaWebPortal.views.home.home')
     
     upload = SuryaUploadData.objects.with_id(objId)
+    flowratestr = "cc/m"
     try:
         result = SuryaIANAResult.objects.get(item=upload)
-    except:
-        result = SuryaIANAFailedResult.objects.get(item=upload)
-        
+        if result.computationConfiguration.airFlowRate < 20:
+            flowratestr = "l/m"
+    except SuryaIANAResult.DoesNotExist:
+        try:
+            result = SuryaIANAFailedResult.objects.get(item=upload)
+        except SuryaIANAFailedResult.DoesNotExist:
+            result = None
     t = loader.get_template('debug/view_upload.html')
-    c = RequestContext(request, {'up':upload, 'dep_id':deploymentId, 'result':result})
+    c = RequestContext(request, {'up':upload, 'dep_id':deploymentId, 'result':result, 'item':result, 'flowratestr':flowratestr})
     return HttpResponse(t.render(c))
 
 @login_required

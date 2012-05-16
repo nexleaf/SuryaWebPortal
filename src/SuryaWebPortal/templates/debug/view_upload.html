@@ -66,5 +66,97 @@ View Upload
 <h3>Results Chart</h3>
 <img src="{% url SuryaWebPortal.views.files.chartfile result.id %}" alt="Debug Image">
 {% endif %}
+<br /><br />
+<h3>Debug Information</h3>
+
+{% if up.processing_success %}
+Results on PREPROCESSING the Image for configuration:<br />
+<br />
+PreProcessing Parameters Used:<br />
+dp            : {{ item.preProcessingConfiguration.dp }}<br />
+minimumRadius : {{ item.preProcessingConfiguration.minimumRadius }}<br />
+maximumRadius : {{ item.preProcessingConfiguration.maximumRadius }}<br />
+highThreshold : {{ item.preProcessingConfiguration.highThreshold }}<br />
+accumulatorThreshold: {{ item.preProcessingConfiguration.accumulatorThreshold }}<br />
+minimumDistance : {{ item.preProcessingConfiguration.minimumDistance }}<br />
+samplingFactor  : {{ item.preProcessingConfiguration.samplingFactor }}<br />
+<br />
+Results:<br />
+SampledRGB  : {{ item.preProcessingResult.sampled }}<br />
+DebugPicName: {{ item.preProcessingResult.debugImage.name }}<br />
+        flowratestr = "cc/m"
+<br />
+Results on COMPUTATION of the Results:<br />
+<br />
+Computation parameters Used:<br />
+filterRadius: {{ item.computationConfiguration.filterRadius }}<br />
+exposedTime : {{ item.computationConfiguration.exposedTime }}<br />
+bcStrip     : {{ item.bcStrips.bcStrips }}<br />
+airFlowRate : {{ item.computationConfiguration.airFlowRate }}<br />
+<br />
+Results:<br />
+BCAreaRed   : {{ item.computationResult.result.BCAreaRed }}<br />
+BCAreaGreen : {{ item.computationResult.result.BCAreaGreen }}<br />
+BCAreaBlue  : {{ item.computationResult.result.BCAreaBlue }}<br />
+BCVolRed    : {{ item.computationResult.result.BCVolRed }}<br />
+BCVolGreen  : {{ item.computationResult.result.BCVolGreen }}<br />
+BCVolBlue   : {{ item.computationResult.result.BCVolBlue }}<br />
+<br />
+chartFileName: {{ item.computationResult.chartImage.name }}
+<br /><br />
+{% else %}
+STATUS: {{ item.status }}<br />
+{% if "PPROCCALIB" in item.status %}
+Failed to Fetch PreProcessingData for item: {{ item.item.file.name }}<br />
+{% else %}
+{% if "PPROC" in item.status %}
+Failed to PreProcess the item: {{ item.item.file.name }}<br />
+Most likely could not detect QR Code.<br />
+{% else %}
+{% if "COMPUCALIB" in item.status %}
+Failed to Fetch Comput ation Calibration info: {{ item.item.file.name }}<br />
+{% else %}
+{% if "COMPU" in item.status %}
+Failed to Computate Results: {{ item.item.file.name }}<br />
+{% else %}
+{% if "SAVIN" in item.status %}
+Failed to Save Results for item: {{ item.item.file.name }}<br />
+{% else %}
+Failed processing item: {{ item.item.file.name }}<br />
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+
+{% if "PPROCCALIB" not in item.status and "SAVIN" not in item.status %}
+PreProcessing Parameters Used:<br />
+dp : {{ item.preProcessingConfiguration.dp }}
+minimumRadius: {{ item.preProcessingConfiguration.minimumRadius }}<br />
+maximumRadius: {{ item.preProcessingConfiguration.maximumRadius }}<br />
+highThreshold: {{ item.preProcessingConfiguration.highThreshold }}<br />
+accumulatorThreshold: {{ item.preProcessingConfiguration.accumulatorThreshold }}<br />
+minimumDistance: {{ item.preProcessingConfiguration.minimumDistance }}<br />
+samplingFactor : {{ item.preProcessingConfiguration.samplingFactor }}<br />
+<br />
+DebugPicName: {{ item.preProcessingResult.debugImage.name }}<br />
+<br />
+{% if "PPROC" not in item.status %}
+Results:<br />
+SampledRGB: {{ item.preProcessingResult.sampled }}<br />
+
+{% if "COMPUCALIB" not in item.status %}
+Results on COMPUTATION of the Results:<br />
+Computation parameters Used:<br />
+filterRadius: {{ item.computationConfiguration.filterRadius }}<br />
+exposedTime : {{ item.computationConfiguration.exposedTime }}<br />
+bcStrip : {{ item.bcStrips.bcStrips }}<br />
+airFlowRate : {{ item.computationConfiguration.airFlowRate }}<br />
+{% endif %}
+
+{% endif %}
+
+{% endif %}
+{% endif %}
 
 {% endblock %}

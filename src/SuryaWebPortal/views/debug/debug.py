@@ -30,6 +30,15 @@ log.setLevel(logging.DEBUG)
 
 
 @login_required
+def deployments(request):
+    if not request.user.is_staff:
+        return redirect('SuryaWebPortal.views.home.home')
+    
+    t = loader.get_template('debug/deployments.html')
+    c = RequestContext(request, {})
+    return HttpResponse(t.render(c))
+
+@login_required
 def debug(request):
     if not request.user.is_staff:
         return redirect('SuryaWebPortal.views.home.home')

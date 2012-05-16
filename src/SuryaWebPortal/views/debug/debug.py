@@ -11,6 +11,7 @@ from django.template import Context, loader, RequestContext
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from django.core.urlresolvers import reverse
 
 from SuryaWebPortal.models import MyUser
 
@@ -33,14 +34,12 @@ log.setLevel(logging.DEBUG)
 
 @login_required
 def deployments(request):
-    all_deployments = SuryaUploadData.objects.distinct('deploymentId')
-    
     if request.user.is_superuser:
-        deployments = all_deployments
+        deployments = SuryaUploadData.objects.distinct('deploymentId')
     else:
         user_deployments = MyUser.objects.get(id=request.user.id).deployment_list()
         deployments = []
-        for d in all_deployments:
+        for d in SuryaUploadData.objects.distinct('deploymentId'):
             if d in user_deployments:
                 deployments.append(d)
     deployments.sort()
@@ -50,9 +49,10 @@ def deployments(request):
 
 @login_required
 def view_deployment(request, deploymentId):
-    u = MyUser.objects.get(id=request.user.id)
-    if deploymentId not in u.deployment_list():
-        return HttpResponseRedirect('/')
+    if not request.user.is_superuser:
+        u = MyUser.objects.get(id=request.user.id)
+        if deploymentId not in u.deployment_list():
+            return HttpResponseRedirect(reverse('SuryaWebPortal.views.home.home'))
     
     uploads = SuryaUploadData.objects(deploymentId=deploymentId).order_by('-serverDatetime')
     t = loader.get_template('debug/view_deployment.html')
@@ -61,9 +61,10 @@ def view_deployment(request, deploymentId):
 
 @login_required
 def view_upload(request, deploymentId, objId):
-    u = MyUser.objects.get(id=request.user.id)
-    if deploymentId not in u.deployment_list():
-        return HttpResponseRedirect('/')
+    if not request.user.is_superuser:
+        u = MyUser.objects.get(id=request.user.id)
+        if deploymentId not in u.deployment_list():
+            return HttpResponseRedirect(reverse('SuryaWebPortal.views.home.home'))
     
     upload = SuryaUploadData.objects.with_id(objId)
     flowratestr = "cc/m"

@@ -4,11 +4,11 @@
 <h2>Deployments</h2>
 <table>
   <tr>
-    <th>Deployment ID</th>
+    <th>Deployments</th>
   </tr>
   {% for d in deployments %}
   <tr>
-    <td>{{ d }}</td>
+    <td><a href="{% url SuryaWebPortal.views.debug.debug.view_deployment d %}">{{ d }}</a></td>
   </tr>
   {% endfor %}
 </table>

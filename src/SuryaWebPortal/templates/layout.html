@@ -45,6 +45,12 @@ Download (todo)
 </div>
 -->
 
+{% if user.is_authenticated %}
+<div class="span-4 colborder">
+<a href="{% url SuryaWebPortal.views.debug.debug.deployments %}">Deployments</a>
+</div>
+{% endif %}
+
 <div class="span-4 colborder">
 {% if user.is_authenticated %}
 <a href="{% url django.contrib.auth.views.logout %}">Logout</a>: {{ user.username }}

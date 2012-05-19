@@ -14,6 +14,44 @@ View Upload
 </div>
 <br />
 
+{% if up.processing_success %}
+<h3>Processing Results</h3>
+{% else %}
+<h3>Processing Results (FAILED)</h3>
+{% endif %}
+
+<ul>
+<li><h2>BC Concentration: {{ result.computationResult.result.BCVolRed|floatformat:5  }} ug/m^3</h2>
+<li><h2>BC Loading: {{ result.computationResult.result.BCAreaRed|floatformat:5  }} ug/cm^2</h2>
+</ul>
+
+<ul>
+<li>Exposure Time: {{ result.computationConfiguration.exposedTime }} {{ result.computationConfiguration.timeUnits }} 
+{% if result.computationConfiguration.airFlowRate < 20 %}
+<li>Air Flow Rate: {{ result.computationConfiguration.airFlowRate }} l/p
+{% else %}
+<li>Air Flow Rate: {{ result.computationConfiguration.airFlowRate }} cc/m
+{% endif %}
+<li>Filter Radius: {{ result.computationConfiguration.filterRadius }} cm
+<li>Misc: {{ up.misc }}
+</ul>
+
+<ul>
+<li><a href="{% url SuryaWebPortal.views.files.uploadfile result.item.id %}">Click for original image</a>
+<li>Upload time: {{ result.item.serverDatetime }}
+<li>Capture time: {{ result.item.recordDatetime }}
+</ul>
+
+
+{% if up.processing_success %}
+<h3>Debug Image</h3>
+<img src="{% url SuryaWebPortal.views.files.debugfile result.id %}" alt="Results Chart">
+<h3>Results Chart</h3>
+<img src="{% url SuryaWebPortal.views.files.chartfile result.id %}" alt="Debug Image">
+{% endif %}
+<br /><br />
+<h1>Advanced Debug Information</h1>
+
 <h3>Upload Data</h3>
 <ul>
 <li>Device ID: {{ up.deviceId }}
@@ -34,43 +72,9 @@ View Upload
 <li>Invalid Reason: {{ up.invalidReason }}
 </ul>
 
-{% if up.processing_success %}
-<h3>Processing Results</h3>
-{% else %}
-<h3>Processing Results (FAILED)</h3>
-{% endif %}
-<ul>
-<li><a href="{% url SuryaWebPortal.views.files.uploadfile result.item.id %}">Click for original image</a>
-<li>Upload time: {{ result.item.serverDatetime }}
-<li>Capture time: {{ result.item.recordDatetime }}
-</ul>
-
-<ul>
-<li>BC Loading: {{ result.computationResult.result.BCAreaRed|floatformat:3  }} ug/cm^2
-<li>BC Concentration: {{ result.computationResult.result.BCVolRed|floatformat:3  }} ug/m^3
-</ul>
-
-<ul>
-<li>Exposure Time: {{ result.computationConfiguration.exposedTime }} {{ result.computationConfiguration.timeUnits }} 
-{% if result.computationConfiguration.airFlowRate < 20 %}
-<li>Air Flow Rate: {{ result.computationConfiguration.airFlowRate }} l/p
-{% else %}
-<li>Air Flow Rate: {{ result.computationConfiguration.airFlowRate }} cc/m
-{% endif %}
-<li>Filter Radius: {{ result.computationConfiguration.filterRadius }} cm
-</ul>
 
 {% if up.processing_success %}
-<h3>Debug Image</h3>
-<img src="{% url SuryaWebPortal.views.files.debugfile result.id %}" alt="Results Chart">
-<h3>Results Chart</h3>
-<img src="{% url SuryaWebPortal.views.files.chartfile result.id %}" alt="Debug Image">
-{% endif %}
-<br /><br />
-<h3>Debug Information</h3>
-
-{% if up.processing_success %}
-Results on PREPROCESSING the Image for configuration:<br />
+<h3>Results on PREPROCESSING the Image for configuration:</h3>
 <br />
 PreProcessing Parameters Used:<br />
 dp            : {{ item.preProcessingConfiguration.dp }}<br />

@@ -1,4 +1,4 @@
-
+p
 {% extends "layout.html" %}
 
 
@@ -23,6 +23,7 @@ View Upload
 <ul>
 <li><h2>BC Concentration: {{ result.computationResult.result.BCVolRed|floatformat:5  }} ug/m^3</h2>
 <li><h2>BC Loading: {{ result.computationResult.result.BCAreaRed|floatformat:5  }} ug/cm^2</h2>
+<li><h3>Warnings: {{ warnmsg }} (<- non empty warning message may mean an invalid result)</h3>
 </ul>
 
 <ul>
@@ -87,6 +88,7 @@ samplingFactor  : {{ item.preProcessingConfiguration.samplingFactor }}<br />
 <br />
 Results:<br />
 SampledRGB  : {{ item.preProcessingResult.sampled }}<br />
+SampledGrad : {{ item.preProcessingResult.gradient }}<br />
 DebugPicName: {{ item.preProcessingResult.debugImage.name }}<br />
         flowratestr = "cc/m"
 <br />

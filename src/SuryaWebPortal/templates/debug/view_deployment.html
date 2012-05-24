@@ -36,6 +36,7 @@ View Deployment: {{ dep_id }}
     <th>Device ID</th>
     <th>Server Date Time</th>
     <th>Successful?</th>
+    <th>Warn</th>
     <th>Load, Conc</th>
     <th>Miscellaneous</th>
   </tr>
@@ -44,6 +45,7 @@ View Deployment: {{ dep_id }}
     <td><a href="{% url SuryaWebPortal.views.debug.debug.view_upload dep_id u.id %}">{{ u.deviceId }}</a></td>
     <td>{{ u.serverDatetime }}</td>
     <td><span class="{{ u.processing_success|yesno }}">{{ u.processing_success|yesno|capfirst }}</span></td>
+    <td>{% validresult u %}</td>
     <td>{{ u.processing_result_str }}</td>
     <td>{{ u.misc }}</td>
   </tr>

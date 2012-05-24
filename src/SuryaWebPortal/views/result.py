@@ -8,7 +8,7 @@ from datetime import datetime
 from Logging.Logger import getLog
 from django.http import HttpResponse, HttpResponseNotFound
 from django.template import Context, loader, RequestContext
-
+from Validation import Validate
 
 from Collections.SuryaUploadData import *
 from Collections.SuryaProcessResult import *
@@ -30,8 +30,10 @@ def oneoffresult(request, objID=None):
     except ValidationError:
         return HttpResponseNotFound('<h1>File not found</h1>')
     
+    warn, warnmsg = Validate.validate(result)
+
     t = loader.get_template('result.html')
-    c = RequestContext(request, {'result' : result})
+    c = RequestContext(request, {'result' : result, 'warnmsg': warnmsg})
     
     return HttpResponse(t.render(c))
 

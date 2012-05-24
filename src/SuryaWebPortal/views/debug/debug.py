@@ -12,8 +12,10 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.urlresolvers import reverse
+from django.shortcuts import render_to_response
 
 from SuryaWebPortal.models import MyUser
+from Validation import Validate
 
 from Collections.SuryaUploadData import *
 from Collections.SuryaGroundTruth import *
@@ -55,9 +57,14 @@ def view_deployment(request, deploymentId):
             return HttpResponseRedirect(reverse('SuryaWebPortal.views.home.home'))
     
     uploads = SuryaUploadData.objects(deploymentId=deploymentId).order_by('-serverDatetime')
-    t = loader.get_template('debug/view_deployment.html')
-    c = RequestContext(request, {'uploads':uploads, 'dep_id':deploymentId})
-    return HttpResponse(t.render(c))
+    return render_to_response('debug/view_deployment.html', {
+            'uploads':uploads,
+            'dep_id':deploymentId,
+            }, context_instance=RequestContext(request))
+    #}, context_instance=RequestContext(request))
+    #t = loader.get_template('debug/view_deployment.html')
+    #c = RequestContext(request, {'uploads':uploads, 'dep_id':deploymentId})
+    #return HttpResponse(t.render(c))
 
 @login_required
 def view_upload(request, deploymentId, objId):
@@ -72,13 +79,14 @@ def view_upload(request, deploymentId, objId):
         result = SuryaIANAResult.objects.get(item=upload)
         if result.computationConfiguration.airFlowRate < 20:
             flowratestr = "l/m"
+        warn, warnmsg = Validate.validate(result)
     except SuryaIANAResult.DoesNotExist:
         try:
             result = SuryaIANAFailedResult.objects.get(item=upload)
         except SuryaIANAFailedResult.DoesNotExist:
             result = None
     t = loader.get_template('debug/view_upload.html')
-    c = RequestContext(request, {'up':upload, 'dep_id':deploymentId, 'result':result, 'item':result, 'flowratestr':flowratestr})
+    c = RequestContext(request, {'up':upload, 'dep_id':deploymentId, 'result':result, 'item':result, 'flowratestr':flowratestr, 'warn': warn, 'warnmsg': warnmsg})
     return HttpResponse(t.render(c))
 
 @login_required

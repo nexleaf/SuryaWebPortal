@@ -8,7 +8,7 @@
   </tr>
   {% for d in deployments %}
   <tr>
-    <td><a href="{% url SuryaWebPortal.views.debug.debug.view_deployment d %}">{{ d }}</a></td>
+    <td><a href="{% url SuryaWebPortal.views.debug.debug.view_deployment_grid d %}">{{ d }}</a></td>
   </tr>
   {% empty %}
   <tr><td>No Deployments Found</td></tr>

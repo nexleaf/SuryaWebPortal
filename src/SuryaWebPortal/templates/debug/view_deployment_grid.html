@@ -73,65 +73,48 @@ View Deployment: {{ dep_id }}
     </form>
 </div>
 
-
-
-<h3>Uploads for this deployment</h3>
+<br><br>
 
 <div class="pagination">
   <span class="step-links">
-    {% if uploads.has_previous %}
-    <a href="?page={{ uploads.previous_page_number }}">&larr; prev</a>
-    {% endif %}
-    
-    <span class="current">
-      Page {{ uploads.number }} of {{ uploads.paginator.num_pages }}
-    </span>
-    
-    {% if uploads.has_next %}
-    <a href="?page={{ uploads.next_page_number }}">next &rarr;</a>
-    {% endif %}
+    <a href="?date={{ prevday }}&byrecord={{ byrecord }}">&larr; prev</a> || <a href="?date={{ nextday }}&byrecord={{ byrecord }}">next &rarr;</a>
   </span>
 </div>
 <br>
 
 <table id="uploads_table">
   <tr>
-    <th>Device ID</th>
-    <th>Server Date Time</th>
-    <th>Successful?</th>
-    <th>Load, Conc</th>
-    <th>Miscellaneous</th>
+    <th>Submission Date:</th>
+    {% for d in datestrs %}
+    <th>{{ d }}</th>
+    {% endfor %}
   </tr>
-  {% for u in uploads.object_list %}
   <tr class="{% cycle 'odd' 'even' %}">
-    <td><a href="{% url SuryaWebPortal.views.debug.debug.view_upload dep_id u.id %}">{{ u.deviceId }}</a></td>
-    <td>{{ u.serverDatetime }}</td>
-    <td><span class="{{ u.processing_success|yesno }}">{{ u.processing_success|yesno|capfirst }}</span></td>
-    <td>{{ u.processing_result_str }}</td>
-    <td>{{ u.misc }}</td>
+    <td>Upload Count:</td>
+    {% for c in datecounts %}
+    {% if c.0 == 0 %}
+    <td>0</td>
+    {% else %}
+    <td><a href="{% url SuryaWebPortal.views.debug.debug.view_deployment_day dep_id c.1.year c.1.month c.1.day %}?byrecord={{ byrecord }}">{{ c.0 }}</a></td>
+    {% endif %}
+    {% endfor %}
   </tr>
-  {% empty %}
-  <tr>
-    <td colspan="4">No Uploads Found for Device ID: {{ dep_id }}</td>
-  </tr>
-  {% endfor %}
 </table>
 
 <div class="pagination">
   <span class="step-links">
-    {% if uploads.has_previous %}
-    <a href="?page={{ uploads.previous_page_number }}">&larr; prev</a>
-    {% endif %}
-    
-    <span class="current">
-      Page {{ uploads.number }} of {{ uploads.paginator.num_pages }}.
-    </span>
-    
-    {% if uploads.has_next %}
-    <a href="?page={{ uploads.next_page_number }}">next &rarr;</a>
-    {% endif %}
+    <a href="?date={{ prevday }}&byrecord={{ byrecord }}">&larr; prev</a> || <a href="?date={{ nextday }}&byrecord={{ byrecord }}">next &rarr;</a>
   </span>
 </div>
+<br>
+
+
+{% if byrecord %}
+<h3>NOTE: the data in the grid above is now grouped by the Record Datetime which is the time the picture was taken (extracted form the EXIF data in the image). Previous it was grouped by the Server Datetime which is the time the picture was uploaded. You can switch back to the old view by <a href="{% url SuryaWebPortal.views.debug.debug.view_deployment_grid dep_id %}?byrecord=False">clicking here</a></h3>
+{% else %}
+<h3><a href="{% url SuryaWebPortal.views.debug.debug.view_deployment_grid dep_id %}?byrecord=True">Click here to switch back to view by Record Datetime instead of Server Datetime</a></h3>
+{% endif %}
+
 
 <br><br><br>
 Download sorted by Record Datetime, not Server Datetime:

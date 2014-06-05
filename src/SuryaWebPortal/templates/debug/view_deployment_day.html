@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style type="text/css">
+.yes {color:green;}
+.no {color:red;}
+table {border: 1px solid #999;}
+table th {border-bottom: 1px solid #999;}
+table tr.highlight_row td {background:#ffffcc !important;}
+</style>
+
+
+<h2 style="margin-bottom:0;">View Deployment: {{ dep_id }}</h2>
+<div class="breadcrumbs">
+<a href="{% url SuryaWebPortal.views.debug.debug.deployments %}">Deployments</a>
+&nbsp;&raquo;&nbsp;
+View Deployment: {{ dep_id }}
+</div>
+<br />
+
+
+
+<img src="{% url data_plot_load_day dep_id year month day %}?byrecord={{ byrecord }}">
+<a href="{% url data_plot_grads_day dep_id year month day %}?byrecord={{ byrecord }}">.</a>
+
+
+<h3>Uploads for this deployment</h3>
+
+
+<div class="pagination">
+  <span class="step-links">
+    <a href="{% url SuryaWebPortal.views.debug.debug.view_deployment_day dep_id prevday.year prevday.month prevday.day %}?byrecord={{ byrecord }}">&larr; prev</a>
+    <a href="{% url SuryaWebPortal.views.debug.debug.view_deployment_day dep_id nextday.year nextday.month nextday.day %}?byrecord={{ byrecord }}">next &rarr;</a>
+  </span>
+</div>
+<br>
+
+<table id="uploads_table">
+  <tr>
+    <th>Device ID</th>
+    <th>Server Date Time</th>
+    <th>Successful?</th>
+    <th>Load, Conc</th>
+    <th>Miscellaneous</th>
+  </tr>
+  {% for u in uploads %}
+  <tr class="{% cycle 'odd' 'even' %}">
+    <td><a href="{% url SuryaWebPortal.views.debug.debug.view_upload dep_id u.id %}">{{ u.deviceId }}</a></td>
+    <td>{{ u.serverDatetime }}</td>
+    <td><span class="{{ u.processing_success|yesno }}">{{ u.processing_success|yesno|capfirst }}</span></td>
+    <td>{{ u.processing_result_str }}</td>
+    <td>{{ u.misc }}</td>
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="4">No Uploads Found for Device ID: {{ dep_id }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<div class="pagination">
+  <span class="step-links">
+    <a href="{% url SuryaWebPortal.views.debug.debug.view_deployment_day dep_id prevday.year prevday.month prevday.day %}?byrecord={{ byrecord }}">&larr; prev</a>
+    <a href="{% url SuryaWebPortal.views.debug.debug.view_deployment_day dep_id nextday.year nextday.month nextday.day %}?byrecord={{ byrecord }}">next &rarr;</a>
+  </span>
+</div>
+<br>
+
+<a href="{% url data_download_day dep_id year month day %}?byrecord={{ byrecord }}">.</a>
+
+
+
+{% endblock %}
+

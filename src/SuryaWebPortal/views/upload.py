@@ -161,6 +161,7 @@ def upload_image(request):
                         elif isinstance(item.calibrationId, SuryaImageAnalysisCalibrationData):
                             log.info('got img analysis calib data')
                             calibData = item.calibrationId
+                            log.info('got img analysis calib data ' + str(calibData.bcDetectorType))
                         elif isinstance(item.calibrationId, SuryaImagePreProcessingCalibrationData):
                             log.info('got img pre proc calib data')
                             pprocData = item.calibrationId

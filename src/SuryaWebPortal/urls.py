@@ -35,10 +35,17 @@ urlpatterns = patterns('',
                        (r'^debug/results/$', debug.results),
                        (r'^debug/failures/$', debug.failures),
 
+                       url(r'^data/(?P<deploymentId>[a-zA-Z0-9._]+)/$', debug.data_download, name='data_download'),
+                       url(r'^data/sorted/(?P<deploymentId>[a-zA-Z0-9._]+)/$', debug.data_download_recordsort, name='data_download_recordsort'),
+                       url(r'^data/(?P<deploymentId>[a-zA-Z0-9._]+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/plot/$', debug.data_plot_load_day, name="data_plot_load_day"),
+                       url(r'^data/(?P<deploymentId>[a-zA-Z0-9._]+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/plotgrads/$', debug.data_plot_grads_day, name="data_plot_grads_day"),
+                       url(r'^data/(?P<deploymentId>[a-zA-Z0-9._]+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/getdata/$', debug.data_download_day, name="data_download_day"),
+                       
                        # Deployments
                        (r'^deployments/$', debug.deployments),
-                       (r'^deployments/(?P<deploymentId>\w+(\.)?\w*)/$', debug.view_deployment),
-                       (r'^deployments/(?P<deploymentId>\w+(\.)?\w*)/(?P<objId>\w+)/$', debug.view_upload),
+                       (r'^deployments/(?P<deploymentId>[a-zA-Z0-9._]+)/$', debug.view_deployment_grid),
+                       url(r'^deployments/(?P<deploymentId>[a-zA-Z0-9._]+)/(?P<year>\d{4})/(?P<month>\d+)/(?P<day>\d+)/$', debug.view_deployment_day, name="view_deployment_day"),
+                       url(r'^deployments/(?P<deploymentId>[a-zA-Z0-9._]+)/(?P<objId>\w+)/$', debug.view_upload, name="view_upload"),
 
                        # for admin 
                        (r'^admin/', include(admin.site.urls)),

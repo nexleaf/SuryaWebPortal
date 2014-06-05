@@ -58,42 +58,58 @@ class Command(BaseCommand):
         calibrationDataList = json.loads(open(args[0],'r').read())
         
         for calibrationDataEntry in calibrationDataList:
-            if len(SuryaCalibrationData.objects(calibrationId=int(calibrationDataEntry.get("calibrationId")))) != 0:
-                continue
-            type = calibrationDataEntry.get("type")
-            self.stdout.write("Working on %s\n" % type)
-            if  type == "compu":
-                calibrationData = SuryaImageAnalysisCalibrationData(calibrationId = calibrationDataEntry.get("calibrationId"),
-                                                                    exposedTime   = calibrationDataEntry.get("exposedTime"),
-                                                                    timeUnits     = calibrationDataEntry.get("timeUnits"),
-                                                                    airFlowRate   = calibrationDataEntry.get("airFlowRate"),
-                                                                    filterRadius  = calibrationDataEntry.get("filterRadius"),
-                                                                    bcArea        = calibrationDataEntry.get("bcArea"))
-                self.stdout.write("Saving compu %d\n" % calibrationData.calibrationId)
-                calibrationData.save()
-            if type == "pproc":
-                calibrationData = SuryaImagePreProcessingCalibrationData(calibrationId = calibrationDataEntry.get("calibrationId"),
-                                                                   dp = calibrationDataEntry.get("dp"),
-                                                                   minimumRadius = calibrationDataEntry.get("minimumRadius"),
-                                                                   maximumRadius = calibrationDataEntry.get("maximumRadius"),
-                                                                   highThreshold = calibrationDataEntry.get("highThreshold"),
-                                                                   accumulatorThreshold = calibrationDataEntry.get("accumulatorThreshold"),
-                                                                   samplingFactor = calibrationDataEntry.get("samplingFactor"),
-                                                                   minimumDistance = calibrationDataEntry.get("minimumDistance"))
-                self.stdout.write("Saving pproc %d\n" % calibrationData.calibrationId)
-                calibrationData.save()
-            if type == "bcstrip":
-                calibrationData = SuryaImageAnalysisBCStripData(calibrationId = calibrationDataEntry.get("calibrationId"),
-                                                            bcStrips = calibrationDataEntry.get("bcStrips"))
-                self.stdout.write("Saving bcstrip %d\n" % calibrationData.calibrationId)
-                calibrationData.save()
+            calibid = int(calibrationDataEntry.get("calibrationId"))
+            cbdo = SuryaCalibrationData.objects(calibrationId=calibid)
+            if len(cbdo) == 0:
+                type = calibrationDataEntry.get("type")
+                self.stdout.write("Working on %s %s\n" % (type, calibrationDataEntry.get("calibrationId")))
+                self.stdout.write("Debug: \n\n%s\n\n" % (str(calibrationDataEntry)))
+                self.stdout.write("BCDetector: %s" % (str(calibrationDataEntry.get("bcDetectorType"))))
+                if  type == "compu":
+                    calibrationData = SuryaImageAnalysisCalibrationData(calibrationId = calibrationDataEntry.get("calibrationId"),
+                                                                        exposedTime   = calibrationDataEntry.get("exposedTime"),
+                                                                        timeUnits     = calibrationDataEntry.get("timeUnits"),
+                                                                        airFlowRate   = calibrationDataEntry.get("airFlowRate"),
+                                                                        filterRadius  = calibrationDataEntry.get("filterRadius"),
+                                                                        bcArea        = calibrationDataEntry.get("bcArea"),
+                                                                        bcDetectorType = calibrationDataEntry.get("bcDetectorType"))
+                    self.stdout.write("Saving compu %d - %s\n" % (calibrationData.calibrationId, calibrationData.bcDetectorType))
+                    calibrationData.save()
+                if type == "pproc":
+                    calibrationData = SuryaImagePreProcessingCalibrationData(calibrationId = calibrationDataEntry.get("calibrationId"),
+                                                                       dp = calibrationDataEntry.get("dp"),
+                                                                       minimumRadius = calibrationDataEntry.get("minimumRadius"),
+                                                                       maximumRadius = calibrationDataEntry.get("maximumRadius"),
+                                                                       highThreshold = calibrationDataEntry.get("highThreshold"),
+                                                                       accumulatorThreshold = calibrationDataEntry.get("accumulatorThreshold"),
+                                                                       samplingFactor = calibrationDataEntry.get("samplingFactor"),
+                                                                       samplingFactorFixed = calibrationDataEntry.get("samplingFactorFixed"),
+                                                                       minimumDistance = calibrationDataEntry.get("minimumDistance"))
+                    self.stdout.write("Saving pproc %d\n" % calibrationData.calibrationId)
+                    calibrationData.save()
+                if type == "bcstrip":
+                    calibrationData = SuryaImageAnalysisBCStripData(calibrationId = calibrationDataEntry.get("calibrationId"),
+                                                                bcStrips = calibrationDataEntry.get("bcStrips"))
+                    self.stdout.write("Saving bcstrip %d\n" % calibrationData.calibrationId)
+                    calibrationData.save()
+            
             deploymentDataList = calibrationDataEntry.get("deploymentIds")
             # Initialize the DB with default DeploymentId to CalibrationData mapping
             for deploymentDataEntry in deploymentDataList:
-                SuryaDeploymentData(deploymentId=deploymentDataEntry.get("deploymentId"),
-                                    activateDatetime=datetime(*deploymentDataEntry.get("activateDatetime")),
-                                    calibrationId=calibrationData).save()
-                                    
+                deplstr = deploymentDataEntry.get("deploymentId")
+                calibobj = SuryaCalibrationData.objects.get(calibrationId=calibid)
+                (sdd, created) = SuryaDeploymentData.objects.get_or_create(deploymentId=deplstr, activateDatetime=datetime(*deploymentDataEntry.get("activateDatetime")), calibrationId=calibobj)
+                if created:
+                    self.stdout.write("Creating depl: %s with id %d\n" % (deplstr, calibid))
+                    sdd.activateDatetime=datetime(*deploymentDataEntry.get("activateDatetime"))
+                else:
+                    self.stdout.write("Verified: %s with id %d\n" % (deplstr, calibid))
+                sdd.save()
+                # 
+                #SuryaDeploymentData(deploymentId=deploymentDataEntry.get("deploymentId"),
+                #                    activateDatetime=datetime(*deploymentDataEntry.get("activateDatetime")),
+                #                    calibrationId=calibrationData).save()
+                
         # Run the Django Webserver
         #os.popen('''/home/surya/ProjectSurya/SuryaWebPortal/src/SuryaWebPortal/manage.py runserver &''')
         
